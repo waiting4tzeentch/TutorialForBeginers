@@ -1,17 +1,39 @@
+/*
+Programmed by Michael Moser
+on 2015 September 19th
+for Wesley Reisz's CIS 490 Mobile Application Development class at
+the University of Louisville's College of Buisness
+using the tutorial by Darryl Bayliss located at
+http://www.raywenderlich.com/78576/android-tutorial-for-beginners-part-2
+ */
 package com.flapdoodle.michaelmoser.tutorialforbeginers;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class HomeScreen extends AppCompatActivity implements View.OnClickListener {
 
-    TextView mainTextView;
-    Button mainButton;
+    /*
+        Initialize variables
+    */
+    TextView mainTextView;      // for displaying the text
+    Button mainButton;          // for the button
+    EditText mainEditText;      // for the edit textbox
+    ListView mainListView;      // for holding a list
+    ArrayAdapter mArrayAdapter; // to do something?
+    ArrayList mNameList = new ArrayList(); // holds a new array list
 
+    // Precondition:  none
+    // Postcondition: HomeScreen is running.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +50,20 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
 
         mainButton = (Button) findViewById(R.id.main_button);
         mainButton.setOnClickListener(this);
+
+        // 3. Access the EditText defined in layout XML
+        mainEditText = (EditText) findViewById(R.id.main_edittext);
+
+        // 4. Access the ListView
+        mainListView = (ListView) findViewById(R.id.main_listview);
+
+        // Create an ArrayAdapter for the ListView
+        mArrayAdapter = new ArrayAdapter(this,
+                        android.R.layout.simple_list_item_1,
+                        mNameList);
+
+        // Set the ListView to use the ArrayAdapter
+        mainListView.setAdapter(mArrayAdapter);
     }
 
     @Override
@@ -37,11 +73,20 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         return true;
     }
 
+    // Precondition:  Text typed into EditText
+    // Postcondition: Text is displayed in TextView
     @Override
     public void onClick(View v) {
-        // test the button
-        mainTextView.setText("Button Pressed!");
+        // Take what was typed into the EditText
+        // and use in TextView
+
+        mainTextView.setText(mainEditText.getText().toString()
+                    + " is learning Android development!");
+
+        // Also add that value to the list shown in the ListView
+        mNameList.add(mainEditText.getText().toString());
+        mArrayAdapter.notifyDataSetChanged();
     }
 
-    // removed public boolean onOptionsItemSelected on instructions from tutorial
+    // removed "public boolean onOptionsItemSelected" on instructions from tutorial
 }

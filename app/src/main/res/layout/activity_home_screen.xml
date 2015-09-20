@@ -1,3 +1,12 @@
+<!--
+    Programmed by Michael Moser
+    on 2015 September 19th
+    for Wesley Reisz's CIS 490 Mobile Application Development class at
+    the University of Louisville's College of Buisness
+    using the tutorial by Darryl Bayliss located at
+    http://www.raywenderlich.com/78576/android-tutorial-for-beginners-part-2
+-->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -36,5 +45,22 @@
             android:src="@drawable/ic_launcher" />
         <!-- Closing tag for the horizontal nested layout -->
     </LinearLayout>
+
+    <!-- Displays keyboard when touched -->
+    <EditText
+        android:id="@+id/main_edittext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:hint="@string/hint"/>
+
+    <!-- List whose dataset is defined in code with an adapter -->
+    <ListView
+        android:id="@+id/main_listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp"></ListView>
 
 </LinearLayout>
