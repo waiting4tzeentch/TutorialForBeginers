@@ -8,19 +8,30 @@ http://www.raywenderlich.com/78576/android-tutorial-for-beginners-part-2
  */
 package com.flapdoodle.michaelmoser.tutorialforbeginers;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class HomeScreen extends AppCompatActivity implements View.OnClickListener {
+public class HomeScreen extends AppCompatActivity
+        implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     /*
         Initialize variables
@@ -31,13 +42,18 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
     ListView mainListView;      // for holding a list
     ArrayAdapter mArrayAdapter; // to do something?
     ArrayList mNameList = new ArrayList(); // holds a new array list
+    ShareActionProvider mShareActionProvider;
+
+    private static final String PREFS = "prefs";        // holds values for preferences filename
+    private static final String PREF_NAME = "name";     // holds values for your name in file
+    SharedPreferences mSharedPreferences;
 
     // Precondition:  none
     // Postcondition: HomeScreen is running.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_screen);
+        setContentView(R.layout.home_screen);
 
         // 1. Access the TextView defined in layout XML
         // and the set its text
@@ -64,13 +80,58 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
 
         // Set the ListView to use the ArrayAdapter
         mainListView.setAdapter(mArrayAdapter);
+
+        // 5. Set this activity to react to list items being pressed
+        mainListView.setOnItemClickListener(this);
+
+        // 6. The text you'd like to share has changed,
+        // and you need to update
+        setShareIntent();
+
+        // 7. Greet the user, or ask for their name if new
+        displayWelcome();
     }
 
+    // Precondition:
+    // Postcondition:
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
+        // Inflate the menu.
+        // Adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_home_screen, menu);
+
+        // Access the Share Item defined in menu XML
+        MenuItem shareItem = menu.findItem(R.id.menu_item_share);
+
+        // Access the object responsible for
+        // putting together the sharing submenu
+        if (shareItem != null) {
+            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        }
+
+        // Create an Intent to share your content
+        setShareIntent();
+
         return true;
+    }
+
+    // Precondition:
+    // Postcondition:
+    private void setShareIntent() {
+
+        if (mShareActionProvider != null) {
+
+            // create an Intent with the contents of the TextView
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Android Development");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, mainTextView.getText());
+
+            // Make sure the provider knows
+            // it should work with that Intent
+            mShareActionProvider.setShareIntent(shareIntent);
+        }
     }
 
     // Precondition:  Text typed into EditText
@@ -81,12 +142,80 @@ public class HomeScreen extends AppCompatActivity implements View.OnClickListene
         // and use in TextView
 
         mainTextView.setText(mainEditText.getText().toString()
-                    + " is learning Android development!");
+                + " is learning Android development!");
 
         // Also add that value to the list shown in the ListView
         mNameList.add(mainEditText.getText().toString());
         mArrayAdapter.notifyDataSetChanged();
     }
 
+    // Precondition:  text has been entered into EditText
+    // Postcondition: text and position displayed in the debug menu
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        // Log the item's position and contents
+        // to the console in Debug
+
+        Log.d("omg android", position + ": " + mNameList.get(position));
+    }
+
     // removed "public boolean onOptionsItemSelected" on instructions from tutorial
+
+    // Precondition:  none
+    // Postcondition: displays a welcome message if the conditions are met
+    public void displayWelcome() {
+
+        // Access the device's key-value storage
+        mSharedPreferences = getSharedPreferences(PREFS, MODE_PRIVATE);
+
+        // Read the user's name,
+        // or an empty string if nothing found
+        String name = mSharedPreferences.getString(PREF_NAME, "");
+
+        if (name.length() > 0) {
+
+            // If the name is valid, display a Toast welcoming them
+            Toast.makeText(this, "Welcome back, " + name + "!", Toast.LENGTH_LONG).show();
+
+        } else {
+
+            // otherwise, show a dialog to ask for their name
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Hello!");
+            alert.setMessage("What is your name?");
+
+            // Create EditText for entry
+            final EditText input = new EditText(this);
+            alert.setView(input);
+
+            // Make an "OK" button to save the name
+            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    // Grab the EditText's input
+                    String inputName = input.getText().toString();
+
+                    // Put it into memory (don't forget to commit!)
+                    SharedPreferences.Editor e = mSharedPreferences.edit();
+                    e.putString(PREF_NAME, inputName);
+                    e.commit();
+
+                    // Welcome the new user
+                    Toast.makeText(getApplicationContext(), "Welcome, " + inputName +
+                            "!", Toast.LENGTH_LONG).show();
+                }
+            });
+
+            // Make a "Cancel" button
+            // that simply dismisses the alert
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+                }
+            });
+
+            alert.show();
+        }
+    }
 }
